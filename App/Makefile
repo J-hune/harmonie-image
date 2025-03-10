@@ -64,4 +64,5 @@ main: $(OBJS)
 	$(CPP)  -o $@ $^ $(LDFLAGS)  $(CPPFLAGS) $(CXXFLAGS) $(LDLIBS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CPP)  -o $@ $< $(LDFLAGS)  $(CPPFLAGS) $(CXXFLAGS) -c $(LDLIBS)
