@@ -3,6 +3,8 @@
 #include <vector>
 #include <array>
 
+
+
 namespace indicators {
 
     double eqm ( const ImageByte& raw_img, const ImageByte& output_img){

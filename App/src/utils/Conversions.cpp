@@ -133,5 +133,3 @@ Vec3 Vec3::convertTo(PixelType t) const{
     }
     return *this;
 }
-
-

@@ -8,14 +8,18 @@
 #include <array>
 #include "./src/utils/Kernel.h"
 #include <functional>
+#include "stb_image.h"
+#include "stb_image_write.h"
+
 
 // Based on http://josiahmanson.com/prose/optimize_ppm/
-
 
 using namespace std;
 using Histogram = std::array< std::array<unsigned int, 3>, 256>;
 using HistogramProbas = std::array< std::array<double, 3>, 256>;
 void eat_comment(ifstream &f);
+
+
 
 class ImageRGB;
 class ImageByte
@@ -44,7 +48,7 @@ public:
     static ImageByte fromPPM(const string &name);
 
 
-    void saveAs(string name) const;
+    void saveAs(string name, float quality) const;
 
     Histogram getHistogramData(bool as_grey = false) const;
 
@@ -144,11 +148,39 @@ public:
 
     static ImageRGB fromPPM(const string &name);
 
+    static ImageRGB from(const string &name){
+        
+        int w, h;
+        int comp = -1;
+
+        unsigned char* image = stbi_load(name.c_str(), &w, &h, &comp, 3);
+
+        ImageRGB res(w, h);
+
+        if (comp == 1){
+            for (int i = 0; i < w * h * comp; i+=comp){
+                res.data[i] = Vec3(image[i]/255.0);
+            }
+        }
+        else if (comp == 3 || comp == 4){
+            for (int i = 0; i < w * h; i+=1){
+                res.data[i] = Vec3(image[3*i]/255.0, image[3*i+1]/255.0, image[3*i+2]/255.0);
+            }
+        }
+        else {
+            std::cout << "[IMAGE LOADING] number of components (" << comp << ") is not 1, 3 or 4." << std::endl;
+            exit(1);
+        }
+
+        stbi_image_free(image);
+
+        return res;
+    }
+
     ImageByte toImage(bool has_neg = true) const;
 
-
-    void saveAs(string name, bool has_neg = false) const{
-        toImage(has_neg).saveAs(name);
+    void saveAs(string name, float quality=1.0, bool has_neg = false) const{
+        toImage(has_neg).saveAs(name, quality);
     }
 
     Histogram getHistogramData(bool as_grey = false) const;
@@ -162,6 +194,15 @@ public:
     void saveHistogramData(string name, bool as_grey = false, bool cumulative = false) const;
 
     void saveHistogramProbabilisticData(string name, bool as_grey = false) const;
+
+    void saveHue(string name) const{
+        auto Img = convertTo(PixelType::HSV);
+        Img.apply([](const Vec3 & v){
+            return Vec3(v[0]);
+        }
+        ).saveHistogramData(name);
+    }
+
 
     const vector< Vec3 > & getData(){
         return data;

@@ -1,6 +1,7 @@
 
 #include "imageLoader.h"
 #include <string>
+#include "stb_image.h"
 
 #include <vector>
 // Source courtesy of J. Manson
@@ -391,8 +392,7 @@ HistogramProbas ImageByte::getHistogramProbaRepartition(bool as_grey) const{
     return res;
 }
 
-// void saveAs(const string & name, bool as_pgm=false);
-void ImageByte::saveAs(string name) const{
+void saveAsPPM(string name, int w, int h, const std::vector<Color> & data){
 
     string ext = name.substr(name.find_last_of("."));
     bool as_pgm = false;
@@ -450,8 +450,21 @@ void ImageByte::saveAs(string name) const{
             fclose(f_image);
         }
     }
-
 }
+
+void ImageByte::saveAs(string name, float quality) const{
+    string ext = name.substr(name.find_last_of("."));
+
+    char * data_start = (char * )data.data();
+
+    if (ext == ".pgm" || ext == ".ppm") saveAsPPM(name, w, h, data);
+    else if (ext == ".jpg" || ext == ".jpeg") stbi_write_jpg(name.c_str(), w, h, 3, data_start, 100 * quality);
+    else {
+        if (! (ext == ".png")) name += ".png";
+        stbi_write_png(name.c_str(), w, h, 3, data_start, w * 3);
+    }
+}
+
 
 ImageRGB ImageRGB::fromPPM(const string &name){
     return ImageRGB(
