@@ -101,36 +101,30 @@ def plot_color_graph_from_file(path: str):
 
 def hue_plot(path):
 
-    x_plot, p1 = [], []
+    p1 = []
     alpha = 0.2
     with open(path, "r") as file:
         reader = csv.reader(file, delimiter=" ")
         line_len = None
         for line in reader:
-            assert line_len is None or line_len == len(line)
-            line_len = len(line)
-            assert line_len in [2]
 
-            x_plot.append(float(line[0]))
             p1.append(float(line[1]))
-    
-    #assert len(x_plot) == 256
-    fig = plt.figure(num=1, clear=True)
-    ax = fig.add_subplot()
 
-    x_plot = np.array(x_plot)
-    
+    p1 = np.array(p1)
+
+    p1 = np.log(1.0 + p1)
+    p1 /=  p1.max()
     fig = plt.figure(num=1, clear=True)
-    ax = fig.add_subplot()
 
     # Compute pie slices
     N = 256
     theta = np.linspace(0.0, 2 * np.pi, N, endpoint=False)
-    radii = 0.5
-    width = 2*np.pi / 256 + 0.01
+    radii = 0.5 * p1 + 0.1
+    width = 2*np.pi / N + 0.01
 
     ax = plt.subplot(projection='polar')
-    ax.bar(theta, radii, width=width, bottom=0.5, color=colors, alpha=1.0)
+    ax.set_yticks([0.0, 0.5, 0.75, 1.0], ["", "0.0", "0.5", "1.0"])
+    ax.bar(theta, radii, width=width, bottom=0.4, color=colors, alpha=1.0)
 
     return fig
 
@@ -143,9 +137,6 @@ if not os.path.exists(directory_in_str + "export_png/" ):
 
 if not os.path.exists(directory_in_str + "export_hist/" ):
     os.makedirs(directory_in_str + "export_hist/" )
-
-fig = hue_plot()
-fig.savefig(directory_in_str + "export_hist/" + "hello" + "_HUE.png")
 
 n_pngs = 0
 n_histos = 0
@@ -164,10 +155,16 @@ for file in os.listdir(directory):
         fig.savefig(directory_in_str + "export_hist/" + filename[0:-4] + "_HISTOGRAM.png")
         n_histos += 1
     
-    elif filename.endswith(".Hdat"):
+    elif filename.endswith(".hdat"):
         fig = hue_plot(directory_in_str + filename)
         fig.savefig(directory_in_str + "export_hist/" + filename[0:-5] + "_HUE.png")
         n_histos += 1
-
+    else:
+        try:
+            im = Image.open(directory_in_str + filename)
+            im.save(directory_in_str + "export_png/" + filename[0:-4] + ".png")
+            n_pngs += 1
+        except:
+            pass
 
 print("Done!\nCreated ", n_pngs, " images and ", n_histos, " histograms.")

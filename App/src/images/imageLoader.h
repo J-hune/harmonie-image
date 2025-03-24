@@ -200,7 +200,7 @@ public:
         Img.apply([](const Vec3 & v){
             return Vec3(v[0]);
         }
-        ).saveHistogramData(name);
+        ).saveHistogramProbabilisticData(name, true);
     }
 
 

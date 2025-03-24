@@ -19,12 +19,17 @@ int main(void){
     
     base_hsv = base_hsv.apply(
         [](const Vec3 & col) -> Vec3 {
-            return Vec3(col[0]+0.4, col[1], col[2]);
+            return Vec3(fmod(col[0]+0.5, 1.0), col[1], col[2]);
         }
     );
     // reconversion en rgb
-    base_hsv.convertTo(PixelType::RGB).saveAs(output_path + "test1.png");
-    base_hsv.convertTo(PixelType::RGB).saveAs(output_path + "test1.jpg");
+    base.saveAs(output_path + "test1.png");
+    base.saveHue(output_path + "base.hdat");
+    base_hsv = base_hsv.convertTo(PixelType::RGB);
+    base_hsv.saveAs(output_path + "test1.jpg");
+    base_hsv.saveHue(output_path + "base_offset.hdat");
+
+
 
     std::cout << "[";
     for (int i = 0; i < 255; ++i){

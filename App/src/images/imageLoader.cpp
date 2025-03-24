@@ -508,7 +508,6 @@ void ImageRGB::saveHistogramProbabilisticData(string name, bool as_grey) const{
 
 
 Color ImageByte::getPixelSafe(int u, int v, RepeatMode repeat_mode) const{
-
     switch (repeat_mode){
         case RepeatMode::TILE:
             return (*this)(

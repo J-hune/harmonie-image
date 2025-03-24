@@ -15,7 +15,7 @@ SRC_DIR := ./src
 OBJ_DIR := ./target
 
 SRCS := $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/*/*.cpp) #profondeur 2 max
-LIBS = -lm -lpthread  -lstdc++
+LIBS = -lm  -lstdc++
 #########################################################"
 
 INCDIR = .
@@ -23,7 +23,7 @@ LIBDIR = .
 BINDIR = .
 
 # nom du compilateur
-CC = g++
+CC = gcc
 CPP = g++
 
 # options du compilateur          
