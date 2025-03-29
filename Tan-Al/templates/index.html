@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Application d'harmonisation d'images basée sur la décomposition par palette et le transfert de couleur, utilisant l'algorithme de Tan et al. (2018).">
+    <meta name="keywords" content="accueil, harmonisation d'images, décomposition par palette, transfert de couleur, Tan et al. 2018">
+    <meta name="robots" content="index, follow">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="../static/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../static/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../static/favicons/favicon-16x16.png">
+    <link rel="manifest" href="../static/favicons/site.webmanifest">
+
+    <title>Harmonisation d'images - Tan et al. (2018)</title>
+    <link rel="stylesheet" href="../static/css/homepage.css">
+</head>
+<div id="webgl-output"></div>
+<div class="container">
+    <h1><img src="../static/img/wand.webp" alt="🪄">Harmonisation d'images</h1>
+    <h2>Cette application est basée sur l'article de Tan, J., Echevarria, J. I., & Gingold, Y. I. (2018) <br>
+        <a href="https://dl.acm.org/doi/10.1145/3272127.3275054" target="_blank" rel="noopener noreferrer">“Palette-based image decomposition, harmonization, and color transfer”</a>
+    </h2>
+    <p>Vous voulez nous aider ? <a href="/feedback">Donnez votre avis ici !</a></p>
+
+    <a href="/app" aria-label="Accéder à l'application">Accéder à l'application</a>
+</div>
+<div class="footer">
+    Made with ❤️ by Jhune - <a href="https://github.com/J-hune">Donovann Zassot </a>
+</div>
+<body>
+
+<!-- ImportMap pour charger les modules depuis CDN -->
+<script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.min.js",
+        "three/": "https://cdn.jsdelivr.net/npm/three@0.172.0/"
+      }
+    }
+</script>
+
+<script type="module" src="../static/js/homepage.js" defer></script>
+</body>
+</html>
