@@ -1,7 +1,8 @@
 
 import cv2
 import numpy as np
-
+import base64 # for socket encoding
+from datetime import datetime
 
 def get_hue(p):
     return p[0] * 2 # because opencv uses hues in [0, 127]
@@ -41,8 +42,6 @@ def E(template, alpha, p): # p is an opencv hsv pixel. hue is half range
 
         hue = get_hue(p)
 
-        print(min_bound, max_bound, hue)
-
         if between(hue, min_bound, max_bound): return hue # if we're inside the sector
 
         dist = angle_distance(hue, min_bound)
@@ -58,10 +57,16 @@ def E(template, alpha, p): # p is an opencv hsv pixel. hue is half range
     return best_hue
 
 # numpyzed
+#def arc_length(p): # pi r theta / 180
+#    saturation = np.array(p)[:,1]
+#    hue = np.array(p)[:, 0]
+#    return np.pi * saturation * hue / 180.0
+
 def arc_length(p): # pi r theta / 180
-    saturation = np.array(p)[:,1]
-    hue = np.array(p)[:, 0]
-    return np.pi * saturation * hue / 180.0
+    #saturation = p[1]
+
+    return np.pi * p / 180.0
+
 
 ## "distance" function
 ## X is an image
@@ -69,21 +74,13 @@ def arc_length(p): # pi r theta / 180
 def F(X, template, alpha):
     acc = 0
 
-    for i in range(0, X.height):
-        for j in range(0, X.width):
+    for i in range(0, X.shape[0]):
+        for j in range(0, X.shape[1]):
             p = X[i, j]
 
             closest_hue = E(template, alpha, p)
             acc += arc_length(abs(get_hue(p) - closest_hue)) * p[1]/255.0
     return acc
-
-
-
-
-
-
-
-
 
 
 templates = {
@@ -98,11 +95,25 @@ templates = {
 
 img = cv2.imread("0.jpg", cv2.IMREAD_COLOR)
 
+
+
 hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
-#cv2.imshow("image", img)
 
-print("press 0 to close")
+startTime = datetime.now()
+
+print(F(
+    hsv_img, 
+    templates["V"],
+    0
+))
+
+
+#cv2.imshow('image',img)
+
+#print("press 0 to close")
+print (datetime.now() - startTime )
+
 cv2.waitKey(0)
 
 cv2.destroyAllWindows()
