@@ -1,12 +1,7 @@
 from setuptools import setup
 
+from Cython.Build import cythonize
+# https://stackoverflow.com/questions/36880336/setup-of-pycharm-for-cython
 setup(
-    name='harmonie-image',
-    version='',
-    packages=[''],
-    url='',
-    license='',
-    author='tom.zinck@etu.umontpellier.fr',
-    author_email='',
-    description=''
+    ext_modules = cythonize("./Cohen-or/cohenOrC.pyx")
 )

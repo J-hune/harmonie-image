@@ -11,7 +11,7 @@ void Kernel::saveDistribution(std::string name) const{
         exit(EXIT_FAILURE);
     }
 
-    for (int i = -extent; i <= extent; ++i){
+    for (int   i = -extent; i <= extent; ++i){
 
         fprintf(f_data,
             "%d %f\n",
@@ -28,8 +28,8 @@ Kernel KernelUtilities::gaussian(int extent, double smoothness){
 
     Kernel res(extent);
 
-    for (int x = -extent;x <= extent ; ++x){
-        for (int y = -extent;y <= extent ; ++y){
+    for (int   x = -extent;x <= extent ; ++x){
+        for (int   y = -extent;y <= extent ; ++y){
 
             int sqrdist = x * x + y * y;
             double c = 2.0 * sigma * sigma;

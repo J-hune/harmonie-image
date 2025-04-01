@@ -29,11 +29,11 @@ public:
 
     void normalize(){
         double sum = 0;
-        for (int i = 0; i < data.size();++i) sum += data[i];
+        for (size_t  i = 0; i < data.size();++i) sum += data[i];
 
         sum = 1.0/sum;
 
-        for (int i = 0; i < data.size();++i) data[i] *= sum;
+        for (size_t  i = 0; i < data.size();++i) data[i] *= sum;
     }
 };
 

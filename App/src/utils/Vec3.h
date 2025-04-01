@@ -189,8 +189,8 @@ public:
     }
 
     Mat3(const Mat3 &m) {
-        for (int i = 0; i < 3; ++i)
-            for (int j = 0; j < 3; ++j)
+        for (int   i = 0; i < 3; ++i)
+            for (int   j = 0; j < 3; ++j)
                 (*this)(i, j) = m(i, j);
     }
 
@@ -228,20 +228,20 @@ public:
     }
 
     void operator=(const Mat3 &m) {
-        for (int i = 0; i < 3; ++i)
-            for (int j = 0; j < 3; ++j)
+        for (int   i = 0; i < 3; ++i)
+            for (int   j = 0; j < 3; ++j)
                 (*this)(i, j) = m(i, j);
     }
 
     void operator+=(const Mat3 &m) {
-        for (int i = 0; i < 3; ++i)
-            for (int j = 0; j < 3; ++j)
+        for (int   i = 0; i < 3; ++i)
+            for (int   j = 0; j < 3; ++j)
                 (*this)(i, j) += m(i, j);
     }
 
     void operator-=(const Mat3 &m) {
-        for (int i = 0; i < 3; ++i)
-            for (int j = 0; j < 3; ++j)
+        for (int   i = 0; i < 3; ++i)
+            for (int   j = 0; j < 3; ++j)
                 (*this)(i, j) -= m(i, j);
     }
 

@@ -69,8 +69,8 @@ public:
     ImageByte toGreyscaleLum() const {
         ImageByte res(w, h);
 
-        for (int i =0; i < w; ++i){
-            for (int j =0; j < h; ++j){
+        for (int   i =0; i < w; ++i){
+            for (int   j =0; j < h; ++j){
                 res(i, j) = Color((*this)(i,j).luminance());
             }
         }
@@ -81,8 +81,8 @@ public:
     ImageByte compareTo(const ImageByte & other, float fac = 1.0) const {
         ImageByte res(w, h);
 
-        for (int i =0; i < w; ++i){
-            for (int j =0; j < h; ++j){
+        for (int   i =0; i < w; ++i){
+            for (int   j =0; j < h; ++j){
 
                 Vec3 diff = (*this)(i,j).toVec3() - other(i,j).toVec3();
                 res(i, j) = Color(diff * fac + Vec3(0.5));
@@ -141,7 +141,7 @@ public:
         h = img.h;
         data.resize(w*h);
         
-        for (int i = 0; i < w*h; ++i) data[i] = img.getData()[i].toVec3();
+        for (int   i = 0; i < w*h; ++i) data[i] = img.getData()[i].toVec3();
     }
 
     PixelType getType() const { return type; }
@@ -158,12 +158,12 @@ public:
         ImageRGB res(w, h);
 
         if (comp == 1){
-            for (int i = 0; i < w * h * comp; i+=comp){
+            for (int   i = 0; i < w * h * comp; i+=comp){
                 res.data[i] = Vec3(image[i]/255.0);
             }
         }
         else if (comp == 3 || comp == 4){
-            for (int i = 0; i < w * h; i+=1){
+            for (int   i = 0; i < w * h; i+=1){
                 res.data[i] = Vec3(image[3*i]/255.0, image[3*i+1]/255.0, image[3*i+2]/255.0);
             }
         }
@@ -216,8 +216,8 @@ public:
     ImageRGB compareTo(const ImageRGB & other, float fac = 1.0) const {
         ImageRGB res(w, h);
 
-        for (int i =0; i < w; ++i){
-            for (int j =0; j < h; ++j){
+        for (int   i =0; i < w; ++i){
+            for (int   j =0; j < h; ++j){
 
                 Vec3 diff = (*this)(i,j) - other(i,j);
                 res(i, j) = diff * fac;
@@ -229,8 +229,8 @@ public:
     ImageRGB convertTo(PixelType t) const {
         ImageRGB res(w, h);
 
-        for (int i =0; i < w; ++i){
-            for (int j =0; j < h; ++j){
+        for (int   i =0; i < w; ++i){
+            for (int   j =0; j < h; ++j){
                 res(i, j) = ((*this)(i,j)).convert(type, t);
             }
         }
@@ -241,8 +241,8 @@ public:
     ImageRGB apply(std::function<Vec3(const Vec3 &)> f){
         ImageRGB res(w, h, type);
 
-        for (int i =0; i < w; ++i){
-            for (int j =0; j < h; ++j){
+        for (int   i =0; i < w; ++i){
+            for (int   j =0; j < h; ++j){
                 res(i, j) = f( (*this)(i, j) );
             }
         }
@@ -252,8 +252,8 @@ public:
     ImageRGB apply(std::function<Vec3(const ImageRGB &, int u, int v)> f){
         ImageRGB res(w, h, type);
 
-        for (int i =0; i < w; ++i){
-            for (int j =0; j < h; ++j){
+        for (int   i =0; i < w; ++i){
+            for (int   j =0; j < h; ++j){
                 res(i, j) = f( (*this), i, j );
             }
         }

@@ -98,7 +98,7 @@ public:
         Color candidate;
         float dist = 999999;
 
-        for (int i = 0; i < p.size(); ++i){
+        for (size_t i = 0; i < p.size(); ++i){
 
             float new_dist = distance_euclidian_squared(p[i]);
 

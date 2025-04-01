@@ -223,7 +223,7 @@ void ImageByte::saveHistogramData(string name, bool as_grey, bool cumulative) co
     if (cumulative){
         HistogramProbas histo = getHistogramProbaRepartition(as_grey);
 
-        for (int i = 0; i <= 255; ++i){
+        for (int   i = 0; i <= 255; ++i){
             if (as_grey){
                 fprintf(f_data,
                     "%d %f\n",
@@ -245,7 +245,7 @@ void ImageByte::saveHistogramData(string name, bool as_grey, bool cumulative) co
     else{
         Histogram histo =getHistogramData(as_grey);
 
-        for (int i = 0; i <= 255; ++i){
+        for (int   i = 0; i <= 255; ++i){
             if (as_grey){
                 fprintf(f_data,
                     "%d %d\n",
@@ -280,7 +280,7 @@ void ImageByte::saveHistogramProbabilisticData(string name, bool as_grey) const{
     HistogramProbas histo = getHistogramProba(as_grey);
     HistogramProbas histoRep = getHistogramProbaRepartition(as_grey);
 
-    for (int i = 0; i <= 255; ++i){
+    for (int   i = 0; i <= 255; ++i){
         if (as_grey){
             fprintf(f_data,
                 "%d %f %f\n",
@@ -316,7 +316,7 @@ void ImageByte::saveHistogramComparison(ImageByte other, string name, bool as_gr
     HistogramProbas histo = getHistogramProba(as_grey);
     HistogramProbas histo2 = other.getHistogramProba(as_grey);
 
-    for (int i = 0; i <= 255; ++i){
+    for (int   i = 0; i <= 255; ++i){
         if (as_grey){
             fprintf(f_data,
                 "%d %f %f\n",
@@ -338,8 +338,8 @@ Histogram ImageByte::getHistogramData(bool is_grey /*= false */) const{
     Histogram res({0, 0, 0});
 
 
-    for (int u=0; u < w; ++u){
-        for (int v=0; v < h; ++v){
+    for (int   u=0; u < w; ++u){
+        for (int   v=0; v < h; ++v){
 
             Color c = (*this)(u, v);
             if (is_grey){
@@ -362,7 +362,7 @@ HistogramProbas ImageByte::getHistogramProba(bool as_grey) const{
     Histogram histo = getHistogramData(as_grey);
 
     float s = w * h;
-    for (int i = 0; i <= 255; ++i){
+    for (int   i = 0; i <= 255; ++i){
         res[i][0] = histo[i][0] / s;
         //std::cout << i << "  " << res[i][0]<< "  " << histo[i][0] << std::endl;
         res[i][1] = histo[i][1] / s;
@@ -383,7 +383,7 @@ HistogramProbas ImageByte::getHistogramProbaRepartition(bool as_grey) const{
     res[0][1] = histo[0][1] / s;
     res[0][2] = histo[0][2] / s;
 
-    for (int i = 1; i <= 255; ++i){
+    for (int   i = 1; i <= 255; ++i){
         res[i][0] = res[i-1][0] + histo[i][0] / s;
         res[i][1] = res[i-1][1] + histo[i][1] / s;
         res[i][2] = res[i-1][2] + histo[i][2] / s;
@@ -409,7 +409,7 @@ void saveAsPPM(string name, int w, int h, const std::vector<Color> & data){
         int taille_image = w * h;
 
         std::vector< char > image_pgm(taille_image);
-        for (int i = 0; i < data.size(); ++i){
+        for (size_t i = 0; i < data.size(); ++i){
             image_pgm[i] = (char) data[i].mean();
         }
 
@@ -474,8 +474,8 @@ ImageRGB ImageRGB::fromPPM(const string &name){
 
 ImageByte ImageRGB::toImage(bool has_neg) const{
         ImageByte res(w, h);
-        for (int i = 0; i < w; ++i)
-            for (int j=0; j< h; ++j)
+        for (int   i = 0; i < w; ++i)
+            for (int   j=0; j< h; ++j)
                 res(i, j) = Color((*this)(i, j) + Vec3(0.5) * (has_neg));
             
         return res;
@@ -550,14 +550,14 @@ Color ImageByte::getPixelSafe(int u, int v, RepeatMode repeat_mode) const{
 ImageByte ImageByte::convolve(const Kernel & kernel, RepeatMode repeat_mode) const{
     ImageByte result(w, h);
 
-    for (int i = 0; i < w; ++i){
-        for (int j = 0; j < h; ++j){
+    for (int   i = 0; i < w; ++i){
+        for (int   j = 0; j < h; ++j){
 
             Vec3 val;
 
             //std::cout  << "nouvelle erosion" << std::endl;
-            for (int u = -kernel.extent; u <= kernel.extent; ++u){
-                for (int v = -kernel.extent; v <= kernel.extent; ++v){
+            for (int   u = -kernel.extent; u <= kernel.extent; ++u){
+                for (int   v = -kernel.extent; v <= kernel.extent; ++v){
                     
                     int k = i+u;
                     int l = j+v;
@@ -575,8 +575,8 @@ ImageByte ImageByte::convolve(const Kernel & kernel, RepeatMode repeat_mode) con
 ImageByte ImageByte::mask_mix(const ImageByte & other, const ImageRGB & mask) const{
     ImageByte res(w, h);
 
-    for (int i =0; i < w; ++i){
-        for (int j =0; j < h; ++j){
+    for (int   i =0; i < w; ++i){
+        for (int   j =0; j < h; ++j){
             res(i, j) = (mask(i, j)[0] > 0.5)? (*this)(i, j): other(i, j);
         }
     }
@@ -627,13 +627,13 @@ Vec3 ImageRGB::getPixelSafe(int u, int v, RepeatMode repeat_mode) const{
 ImageRGB ImageRGB::convolve(const Kernel & kernel, RepeatMode repeat_mode) const{
     ImageRGB result(w, h);
 
-    for (int i = 0; i < w; ++i){
-        for (int j = 0; j < h; ++j){
+    for (int   i = 0; i < w; ++i){
+        for (int   j = 0; j < h; ++j){
 
             Vec3 val;
 
-            for (int u = -kernel.extent; u <= kernel.extent; ++u){
-                for (int v = -kernel.extent; v <= kernel.extent; ++v){
+            for (int   u = -kernel.extent; u <= kernel.extent; ++u){
+                for (int   v = -kernel.extent; v <= kernel.extent; ++v){
                     
                     int k = i+u;
                     int l = j+v;
