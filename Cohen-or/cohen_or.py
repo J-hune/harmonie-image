@@ -4,6 +4,9 @@ import numpy as np
 import base64 # for socket encoding
 from datetime import datetime
 
+from ansible_collections.community.general.plugins.modules.infinity import Infinity
+
+
 def get_hue(p):
     return p[0] * 2 # because opencv uses hues in [0, 127]
 
@@ -83,6 +86,8 @@ def F(X, template, alpha):
     return acc
 
 
+
+
 templates = {
     "i": HarmonicTemplate([(18.0, 0)]),
     "V": HarmonicTemplate([(93.6, 0)]),
@@ -93,27 +98,55 @@ templates = {
     "X": HarmonicTemplate([(93.6, 0), (93.6, 180.0)])
 }
 
-img = cv2.imread("0.jpg", cv2.IMREAD_COLOR)
+NB_STEPS = 10
+def find_minimizing_scheme(X):
+
+    best_scheme = None
+    best_distance = np.inf
+    for m in templates.keys():
+        print("processing template ", m)
+        for alpha in  np.linspace(0, 359, NB_STEPS):
+            print("     processing angle ", alpha)
+            d = F(X, templates[m], alpha)
+            if d < best_distance:
+                best_distance = d
+                best_scheme = (templates[m], alpha)
+    return best_scheme
+
+def project_image_on_scheme(X, scheme):
+    for i in range(0, X.shape[0]):
+        for j in range(0, X.shape[1]):
+            X[i, j][0] = E(scheme[0], scheme[1], X[i, j])
 
 
 
-hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+
+if __name__ == "__main__":
+    img = cv2.imread("0.jpg", cv2.IMREAD_COLOR)
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
 
-startTime = datetime.now()
+    startTime = datetime.now()
+    ####
 
-print(F(
-    hsv_img, 
-    templates["V"],
-    0
-))
+    scheme = find_minimizing_scheme(hsv_img)
+
+    print (datetime.now() - startTime )
+    startTime = datetime.now()
+
+    project_image_on_scheme(hsv_img, scheme)
 
 
-#cv2.imshow('image',img)
+    ####
+    print (datetime.now() - startTime )
 
-#print("press 0 to close")
-print (datetime.now() - startTime )
 
-cv2.waitKey(0)
+    res_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
+    cv2.imwrite("result.jpeg", res_img)
 
-cv2.destroyAllWindows()
+    cv2.imshow('image',res_img)
+
+    print("press 0 to close")
+    cv2.waitKey(0)
+
+    cv2.destroyAllWindows()
