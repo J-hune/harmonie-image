@@ -24,11 +24,11 @@ templates = {
 }
 
 def recolor_image(image, template_angles, rotation):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
-    rotated_template = [(angle + rotation) % 180 for angle in template_angles]
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)    # Convert from OpenCV's BGR to HSV, Hue is easiest to manipulate color changes
+    h, s, v = cv2.split(hsv) #h: contains hue (0-179 in OpenCV HSV) s: sturation (color intensity) v: brightness
+    rotated_template = [(angle + rotation) % 180 for angle in template_angles] #Apply user rotation to each angle in the harmonic template
     def map_hue(hue_val):
-        return min(rotated_template, key=lambda t: min(abs(t - hue_val), 180 - abs(t - hue_val)))
+        return min(rotated_template, key=lambda t: min(abs(t - hue_val), 180 - abs(t - hue_val))) #For each hue in the image, find the closest harmonic template hue (circularly).
     vectorized_map = np.vectorize(map_hue)
     new_h = vectorized_map(h)
     recolored_hsv = cv2.merge([new_h.astype(np.uint8), s, v])
