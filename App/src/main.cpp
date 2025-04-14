@@ -51,7 +51,7 @@ int main(int argc, char *argv[]){
     std::cout << "\nusing template " << input_template << std::endl;
     std::cout << "using angle " << angle_best << std::endl;
     projectImageOnScheme(base_hsv, t_best, angle_best);
-
+    //base_hsv = projectImageOnScheme2(base_hsv, t_best, angle_best);
     // reconversion en rgb
     base_hsv.convertTo(PixelType::RGB).saveAs(output_path + "output.png");
     return 0;

@@ -4,6 +4,7 @@
 #include <array>
 #include <algorithm>
 #include <map>
+#include <thread>
 #include <cfloat>
 
 
@@ -98,6 +99,19 @@ double F(const ImageRGB&  X, HarmonicTemplate templ, float alpha){
     return acc;
 }
 
+void Fthread(double* dist, const ImageRGB&  X, HarmonicTemplate templ, float alpha){
+    double acc = 0;
+
+    for (int   i = 0; i < X.w; ++i){
+        for (int   j = 0; j < X.h; ++j){
+            auto p = X(i, j);
+
+            float closest_hue = E(templ, alpha, p);
+            acc += arc_length(abs(p[0] - closest_hue)) * p[1];
+        }
+    }
+    *dist = acc;
+}
 
 map<string, HarmonicTemplate> templates = {
     {"i", HarmonicTemplate({{18.0, 0}})},
@@ -114,18 +128,32 @@ constexpr int delta_angle = 10;
 
 float findMinimizingAngle(const ImageRGB & X, const HarmonicTemplate & templ, double* best_dist = nullptr){
 
-    // TODO multithread from here
     double best_distance_for_angle = DBL_MAX;
     HarmonicTemplate best_template;
     float best_angle;
-    for (int   alpha = 0; alpha < 360; alpha += delta_angle){
-        double dist = F(X, templ, alpha / 360.0f);
 
-        if (dist < best_distance_for_angle){
-            best_distance_for_angle = dist;
-            best_angle = alpha / 360.0f;
+    std::array< double, 360 / delta_angle> dists;
+
+    std::array< std::thread, 360 / delta_angle> threads;
+
+    for (int i = 0; i < 360/delta_angle; ++i){
+        threads[i] = std::thread(Fthread, &dists[i], X, templ, i * delta_angle / 360.0);
+    }
+
+    for (int i = 0; i < 360/delta_angle; ++i){
+        threads[i].join();
+    }
+
+    for (int i = 0; i < 360/delta_angle; ++i){
+
+        if (dists[i] < best_distance_for_angle){
+            best_distance_for_angle = dists[i];
+            best_angle = i * delta_angle / 360.0f;
         }
     }
+
+
+
     if (best_dist) *best_dist = best_distance_for_angle;
     return best_angle;
 }
@@ -156,4 +184,39 @@ void projectImageOnScheme(ImageRGB & X, HarmonicTemplate & templ, float angle){
             X(i, j)[0] = E(templ, angle, X(i, j));
         }
     }
+}
+
+
+float f_alpha = 0.05;
+// not sure if it's accurate to the paper but that's how I understood the principle.
+ImageRGB projectImageOnScheme2(const ImageRGB & X, HarmonicTemplate & templ, float norm_angle){ // angle between 0 and 1
+
+    ImageRGB res(X.w, X.h, X.getType());
+
+    for (int   i = 0; i < X.w; ++i){
+        for (int   j = 0; j < X.h; ++j){
+            float base_color = X(i, j)[0];
+
+            float best_color = E(templ, norm_angle, X(i, j));
+            float best_dist = angle_distance(base_color, best_color);
+            if (
+                i > 0 &&
+                best_dist < f_alpha * angle_distance(base_color, X(i-1, j)[0])
+            ){
+                best_color = res(i-1, j)[0];
+                best_dist = angle_distance(base_color, X(i-1, j)[0]);
+            }
+
+            if (
+                j > 0 &&
+                best_dist < f_alpha * angle_distance(base_color, X(i, j-1)[0])
+            ){
+                best_color = res(i, j-1)[0];
+                best_dist = angle_distance(base_color, X(i, j-1)[0]);
+            }
+            res(i, j) = X(i,j);
+            res(i, j)[0] = best_color;
+        }
+    }
+    return res;
 }
