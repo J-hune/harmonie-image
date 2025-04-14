@@ -9,6 +9,7 @@ import streamlit.components.v1 as components
 import streamlit_javascript as st_js
 import colorsys
 import json
+import subprocess
 
 # To run this script, use the following command in your terminal:
 # streamlit run harmonization_rotation_autosync.py 
@@ -23,119 +24,49 @@ templates = {
     "X": [0, 93.6, 180, 273.6]
 }
 
-def recolor_image(image, template_angles, rotation):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
-    rotated_template = [(angle + rotation) % 180 for angle in template_angles]
-    def map_hue(hue_val):
-        return min(rotated_template, key=lambda t: min(abs(t - hue_val), 180 - abs(t - hue_val)))
-    vectorized_map = np.vectorize(map_hue)
-    new_h = vectorized_map(h)
-    recolored_hsv = cv2.merge([new_h.astype(np.uint8), s, v])
-    recolored_bgr = cv2.cvtColor(recolored_hsv, cv2.COLOR_HSV2BGR)
-    return recolored_bgr
+def recolor_image(image, template_letter, rotation):
+    if template_letter == "ND":
+        template_letter = "ND"
+    if rotation is None:
+        rotation = "ND"
+    image.save("./temp.png")
 
-st.title("Harmonic Color Palette Generator")
+    process_result = subprocess.run(['./main', './temp.png', str(template_letter), str(rotation)], capture_output=True, text=True)
+    #st.write(process_result.stdout)
+
+    recolored = Image.open("./output.png")
+
+    return recolored
+
+st.title("Cohen-Or et al: Harmonic Color Palette Generator")
 
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 if uploaded_file is not None:
     image = Image.open(uploaded_file).convert("RGB")
     image_np = np.array(image)
     image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
-    st.image(image, caption="Original Image", use_column_width=True)
+    st.image(image, caption="Original Image", use_container_width=True)
 
-    template_name = st.selectbox("Select Harmonic Template", list(templates.keys()))
-    st.markdown("### Interactive Color Wheel")
+    st.markdown("### Parameters")
+
+    mode = st.selectbox("Process mode", ["Best template & angle", "Given template, best angle", "Given template, given angle"])
+    template_name = st.selectbox("Harmonic Template", list(templates.keys()))
     template_json = json.dumps(templates[template_name])
 
-    components.html(f'''
-    <div style="text-align:center">
-    <canvas id="wheel" width="300" height="300" style="cursor:grab;"></canvas>
-    <p>Rotation: <span id="angleVal">0</span>°</p>
-    </div>
-    <script>
-    const canvas = document.getElementById('wheel');
-    const ctx = canvas.getContext('2d');
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = 120;
-    let isDragging = false;
-    let rotation = parseInt(localStorage.getItem('rotation_angle') || '0');
-    const templateAngles = {template_json};
-
-    function hsvToRgb(h, s, v) {{
-        let r, g, b;
-        let i = Math.floor(h * 6);
-        let f = h * 6 - i;
-        let p = v * (1 - s);
-        let q = v * (1 - f * s);
-        let t = v * (1 - (1 - f) * s);
-        switch (i % 6) {{
-            case 0: r = v; g = t; b = p; break;
-            case 1: r = q; g = v; b = p; break;
-            case 2: r = p; g = v; b = t; break;
-            case 3: r = p; g = q; b = v; break;
-            case 4: r = t; g = p; b = v; break;
-            case 5: r = v; g = p; b = q; break;
-        }}
-        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-    }}
-
-    function drawWheel() {{
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < 360; i++) {{
-            const start = (i - 1) * Math.PI / 180;
-            const end = i * Math.PI / 180;
-            const hue = i / 360;
-            const rgb = hsvToRgb(hue, 1, 1);
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.arc(centerX, centerY, radius, start, end);
-            ctx.closePath();
-            ctx.fillStyle = `rgb(${{rgb[0]}}, ${{rgb[1]}}, ${{rgb[2]}})`;
-            ctx.fill();
-        }}
-        for (let a of templateAngles) {{
-            const angle = (a + rotation) % 360;
-            const rad = angle * Math.PI / 180;
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(centerX + radius * Math.cos(rad), centerY + radius * Math.sin(rad));
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }}
-        document.getElementById('angleVal').innerText = rotation;
-        localStorage.setItem('rotation_angle', rotation);
-    }}
-
-    function getAngle(x, y) {{
-        return Math.atan2(y - centerY, x - centerX) * 180 / Math.PI;
-    }}
-    drawWheel();
-    canvas.addEventListener('mousedown', e => {{ isDragging = true; canvas.style.cursor = 'grabbing'; }});
-    canvas.addEventListener('mouseup', e => {{ isDragging = false; canvas.style.cursor = 'grab'; }});
-    canvas.addEventListener('mousemove', e => {{
-        if (isDragging) {{
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            rotation = Math.round((getAngle(x, y) + 360) % 360);
-            drawWheel();
-        }}
-    }});
-    </script>
-    ''', height=360)
-
-    rotation_js = st_js.st_javascript("parseInt(localStorage.getItem('rotation_angle') || '0')", key="rotation_sync")
-    if 'rotation' not in st.session_state or st.session_state['rotation'] != rotation_js:
-        st.session_state['rotation'] = rotation_js if rotation_js is not None else 0
-    rotation = st.number_input('Rotation angle', value=st.session_state['rotation'], min_value=0, max_value=359)
+    rotation = st.number_input('Rotation angle', min_value=0, max_value=359)
 
     if st.button("Apply Template"):
-        recolored = recolor_image(image_bgr, templates[template_name], rotation)
-        recolored_rgb = cv2.cvtColor(recolored, cv2.COLOR_BGR2RGB)
-        st.image(recolored_rgb, caption=f"Recolored Image ({template_name}, {rotation}°)", use_column_width=True)
+
+        if 'rotation' not in st.session_state or st.session_state['rotation'] != rotation:
+            st.session_state['rotation'] = rotation if rotation is not None else 0
+        
+        if mode == "Given template, best angle": rotation = "ND"
+        if mode == "Best template & angle": rotation = template_name = "ND"
+
+        
+        recolored = recolor_image(image, template_name, rotation)
+        recolored_rgb = np.array(image)
+        st.image(recolored, caption=f"Recolored Image ({template_name}, {rotation}°)", use_container_width=True)
 
         recolored_pil = Image.fromarray(recolored_rgb)
         buf = io.BytesIO()
@@ -146,7 +77,7 @@ if uploaded_file is not None:
         # Hue mapping visualization
         fig, ax = plt.subplots(1, 3, figsize=(15, 4))
         original_hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
-        recolored_hsv = cv2.cvtColor(recolored, cv2.COLOR_BGR2HSV)
+        recolored_hsv = cv2.cvtColor(recolored_rgb, cv2.COLOR_RGB2HSV)
         ax[0].hist(original_hsv[:, :, 0].flatten(), bins=180, range=(0, 180), color="orange")
         ax[0].set_title("Original Hue Histogram")
         ax[1].hist(recolored_hsv[:, :, 0].flatten(), bins=180, range=(0, 180), color="green")
@@ -172,7 +103,7 @@ if uploaded_file is not None:
         ax_polar = polar_fig.add_subplot(111, polar=True)
         hist, _ = np.histogram(original_hsv[:, :, 0].flatten(), bins=180, range=(0, 180))
         angles = np.deg2rad(np.arange(180))
-        colors = [plt.cm.hsv(h / 180.0) for h in range(180)]
+        colors = [plt.cm.hsv((h - 90) / 180.0) for h in range(180)]
         ax_polar.bar(angles, hist, width=np.deg2rad(1), bottom=0, color=colors, edgecolor="none")
         ax_polar.set_xticks([])
         ax_polar.set_yticks([])

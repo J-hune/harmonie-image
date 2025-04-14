@@ -5,43 +5,54 @@
 
 #include "./src/algos/cohen-or.hpp"
 
-int main(void){
+int main(int argc, char *argv[]){
     
-    const string input_path = "./img/nenuphars.png";
-    const string output_path = "./img_out/";
+    // the arguments are :
+    // - image path
+    // - templace to use or "ND"
+    //  - angle to use or "ND"
+    bool autodetectTemplate = true;
+    bool autodetectAngle = true;
+
+    string input_path = string(argv[1]);
+
+    string input_template = string(argv[2]);
+    string input_angle = string(argv[3]);
+
+    const string output_path = "./";
+
     
+    std::cout << input_path << std::endl;
     // small example
     ImageRGB base = ImageRGB::from(input_path);
 
     ImageRGB base_hsv = base.convertTo(PixelType::HSV);
 
-    HarmonicTemplate t_best = templates["V"];
-    float angle_best = 10.0;
-
-    auto start = std::chrono::steady_clock::now();
-
-    //findMinimizingScheme(base_hsv, t_best, angle_best);
-
-    angle_best = findMinimizingAngle(base_hsv, templates["I"]);
-    
-    for (auto & s : t_best.sectors){
-        std::cout << "sec " << s[0] << " " << s[1] << std::endl;
+    HarmonicTemplate t_best;
+    float angle_best;
+    if (input_template != "ND"){
+        t_best = templates[ input_template ];
+        autodetectTemplate = false;
     }
 
-    std::cout << "angle " << angle_best << std::endl;
-    
+    if (input_angle != "ND"){
+        angle_best = std::stof(input_angle) / 360.0f;
+        autodetectAngle = false;
+    }
 
+    // if we autodetect the template, we must autodetect the angle (would make no sense to set an angle without setting the template aswell)
+    if (autodetectTemplate){
+        findMinimizingScheme(base_hsv, t_best, angle_best);
+    }
+    else if (autodetectAngle){
+        angle_best = findMinimizingAngle(base_hsv, t_best);
+    }
 
+    std::cout << "\nusing template " << input_template << std::endl;
+    std::cout << "using angle " << angle_best << std::endl;
     projectImageOnScheme(base_hsv, t_best, angle_best);
 
-
-    auto end = std::chrono::steady_clock::now();
-    
-    std::cout << "Temps de traitement : " <<std::chrono::duration<double, std::milli>(end - start).count()/1000.0 << "s"<< std::endl;
-
     // reconversion en rgb
-    base_hsv.convertTo(PixelType::RGB).saveAs(output_path + "nenu.png");
-    base_hsv.convertTo(PixelType::RGB).compareTo(base, 5.0).saveAs(output_path + "diff.png");
-
+    base_hsv.convertTo(PixelType::RGB).saveAs(output_path + "output.png");
     return 0;
 }
